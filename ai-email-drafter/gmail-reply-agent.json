@@ -1,0 +1,186 @@
+{
+  "name": "gmail-reply-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6796a10c-a5ff-48dc-9ddb-6639227574ae",
+      "name": "When chat message received",
+      "webhookId": "535548d1-f8cc-4fb7-8472-918257e0c3af"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "591c7788-11ed-4e1b-8a89-3861e6c40833",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "dc0531b2-ff6d-4fd0-9f8f-c5f933e8b1be",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YAFogQVAFzrXVEuP",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        224
+      ],
+      "id": "dd56cc4d-c311-40a4-a3d1-ff7f41e1e6f6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day')}}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        224
+      ],
+      "id": "1b6f6a4f-c241-43da-a28c-5a2c1341054c",
+      "name": "Get many messages in Gmail",
+      "webhookId": "9a2bed1e-3700-4da3-94e2-06a36dbec139",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WUQM1R7QURLUUque",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "sendTo": "ali.personalinbox@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        224
+      ],
+      "id": "ac115426-74a3-4945-a3a1-ca88613d225a",
+      "name": "Create a draft in Gmail",
+      "webhookId": "9827623b-9790-4dc9-8de6-2821aa5cffa9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WUQM1R7QURLUUque",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "cce734d3-3eae-472f-9921-caf1e1ef30d0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf7c54b9e2788031b435b03031d7042c62767155799fbe5c546cd24c1d128760"
+  },
+  "id": "2MDXGxjwUrIFkmnuLfTU-",
+  "tags": []
+}
