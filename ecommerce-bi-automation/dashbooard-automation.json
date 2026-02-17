@@ -1,0 +1,348 @@
+{
+  "name": "dashbooard-automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1nlXwHP9DxdqjO-k4WJAAAbEAHsvwXoQ7",
+          "mode": "list",
+          "cachedResultName": "n8n-testing",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1nlXwHP9DxdqjO-k4WJAAAbEAHsvwXoQ7"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "47cfe347-98ce-48e6-b93a-25d60acd35af",
+      "name": "Google Drive Trigger",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAbLu7ECOfC8aM0m",
+          "name": "google auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        -160
+      ],
+      "id": "d22e9c7b-b524-4421-86ae-c9ebaba2b83b",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (Mode: Run Once for All Items)\n// Sums Total Order Items (+ B2B) and Ordered Product Sales (+ B2B)\n// Outputs ONE row per file: Month, Total_Orders, Total_Revenue, Source_File\n\nfunction toNumber(val) {\n  if (val === null || val === undefined) return 0;\n  const s = String(val).trim();\n  if (!s) return 0;\n  const n = Number(s.replace(/[$,]/g, \"\"));\n  return Number.isFinite(n) ? n : 0;\n}\n\n// 1) Get the CURRENT file name for THIS loop execution\nlet fileName = \"\";\ntry {\n  const dlItem = $items(\"Download file\", 0, $runIndex)[0]; // <-- key change\n  fileName =\n    dlItem?.binary?.data?.fileName ||\n    dlItem?.json?.name ||\n    dlItem?.json?.fileName ||\n    \"\";\n} catch (e) {\n  fileName = \"\";\n}\n\n// 2) Build Month from filename like BR-12-1-25.csv\nconst months = [\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"];\nlet monthValue = \"\";\n\nconst m = String(fileName).match(/-(\\d{1,2})-(\\d{1,2})-(\\d{2})/); // -(MM)-(DD)-(YY)\nif (m) {\n  const mm = Number(m[1]);\n  const yy = m[3];\n  if (mm >= 1 && mm <= 12) {\n    monthValue = `1-${months[mm - 1]}-20${yy}`;\n  }\n}\n\n// 3) Sum totals across ALL extracted rows (items = rows from Extract from File)\nlet totalOrders = 0;\nlet totalRevenue = 0;\n\nfor (const row of items) {\n  const orders = toNumber(row.json[\"Total Order Items\"]);\n  const ordersB2B = toNumber(row.json[\"Total Order Items - B2B\"]);\n\n  const sales = toNumber(row.json[\"Ordered Product Sales\"]);\n  const salesB2B = toNumber(row.json[\"Ordered Product Sales - B2B\"]);\n\n  totalOrders += orders + ordersB2B;\n  totalRevenue += sales + salesB2B;\n}\n\n// 4) Return ONE item (one row for Google Sheets)\nreturn [\n  {\n    json: {\n      Month: monthValue,\n      Total_Orders: totalOrders,\n      Total_Revenue: Number(totalRevenue.toFixed(2)),\n      Source_File: fileName,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        -160
+      ],
+      "id": "30c4f8b6-91f2-4eec-93c9-9ed8c552a2f5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        656,
+        -160
+      ],
+      "id": "e15d4378-d3e5-4132-a0da-b60840f468fc",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAbLu7ECOfC8aM0m",
+          "name": "google auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1nlXwHP9DxdqjO-k4WJAAAbEAHsvwXoQ7",
+            "mode": "list",
+            "cachedResultName": "n8n-testing",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1nlXwHP9DxdqjO-k4WJAAAbEAHsvwXoQ7"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "dca86d17-d720-4139-8bb8-cc3c3ee33ac6",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "vAbLu7ECOfC8aM0m",
+          "name": "google auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "9bdc7a0e-d645-49d3-be7f-ff584d2946b3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0fc89df8-7f53-425e-ad2b-24f116c276f6",
+              "name": "filename",
+              "value": "={{ $binary.data.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -160
+      ],
+      "id": "624d6a45-4d01-4732-b8e9-938475ffe2a1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1qwfH8FKtpSTWfqJ_RfsD5x4F2DM7AG18FZ1S-r-Ps18",
+          "mode": "list",
+          "cachedResultName": "Dashboard Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qwfH8FKtpSTWfqJ_RfsD5x4F2DM7AG18FZ1S-r-Ps18/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Amazon",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qwfH8FKtpSTWfqJ_RfsD5x4F2DM7AG18FZ1S-r-Ps18/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Month": "={{ $json.Month }}",
+            "Total Orders": "={{ $json.Total_Orders }}",
+            "Total Revenue": "={{ $json.Total_Revenue }}"
+          },
+          "matchingColumns": [
+            "Month"
+          ],
+          "schema": [
+            {
+              "id": "Month",
+              "displayName": "Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Orders",
+              "displayName": "Total Orders",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Revenue",
+              "displayName": "Total Revenue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1552,
+        -96
+      ],
+      "id": "fdd7e403-1f3f-499f-8091-c4319dafd60c",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ALFIlIjkQXjtAu3U",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 0
+  },
+  "versionId": "30a1bdb6-decf-4777-977c-b026185e566a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf7c54b9e2788031b435b03031d7042c62767155799fbe5c546cd24c1d128760"
+  },
+  "id": "mF5akTFintjhsY0HSEOC2",
+  "tags": []
+}
