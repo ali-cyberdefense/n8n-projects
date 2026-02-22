@@ -5,6 +5,10 @@
 ![Pipedrive](https://img.shields.io/badge/Pipedrive-CRM-green)
 ![Gmail](https://img.shields.io/badge/Gmail-Email%20Drafts-red)
 
+## Demo
+
+[![Watch the Demo](https://img.youtube.com/vi/XZSRRDza3QQ/hqdefault.jpg)](https://youtu.be/XZSRRDza3QQ)
+
 ## The Problem
 
 Business development teams waste hours on repetitive manual work — researching prospects, entering data into CRMs, and drafting outreach emails. Each step is disconnected, slow, and error-prone, especially for small teams without dedicated RevOps support.
