@@ -1,0 +1,168 @@
+{
+  "name": "SDR sub-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are an expert SDR agent. You use your tools to read all the person record in pipedrive CRM and your job is to draft professional HTTP sales email from Ali (CMO of AmazonAI agency) for each lead separately offering them the amazon brand management and ads management service. The email should be professionaly formatted in HTML.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "150b3b36-4524-48bd-9cb6-b33d3b0fe6f6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {
+          "reasoningEffort": "low"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "89ec4d22-ae5f-4aa7-adfe-b0045b634bf7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "VWQWiAflK0mfShii",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "operation": "getAll",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pipedriveTool",
+      "typeVersion": 1,
+      "position": [
+        384,
+        224
+      ],
+      "id": "d8c63745-25d7-4343-802a-df35415d463a",
+      "name": "Get many people in Pipedrive",
+      "credentials": {
+        "pipedriveApi": {
+          "id": "IJ5VKHP8CCiyPMLg",
+          "name": "Pipedrive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        224
+      ],
+      "id": "be913163-7faa-425d-9854-956384834109",
+      "name": "Create a draft in Gmail",
+      "webhookId": "28dd9b35-e844-4340-9a47-f5fe42e32330",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "x9zniqUvZm8gXHDI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3c1aea7b-22e7-4542-9265-15c2f242d79a",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many people in Pipedrive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "10aa04ac-292f-49a0-9f60-8af417fecee2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9187a10312f3555f81d4fa43d24ad06a1fe89a5fb40f44606a349e3d9bb6ece8"
+  },
+  "id": "Djhyk5L0mJyjnyM7",
+  "tags": []
+}

@@ -1,0 +1,181 @@
+{
+  "name": "Prospecting sub-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You find sales prospects based on a specific query from the user. You use your tools to search the internet and scrape websites as necessary to find the best potential clients for users, and respond with 5 sales prospects.\n\nCRITICAL TOOL RULE:\nWhen using the firecrawl_scrape tool, you MUST provide the formats parameter as an array containing exactly one string: ['markdown']. Do not pass it as a simple string or include other formats like HTML.",
+          "maxIterations": 30
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "63bcd438-5111-47f2-b9f3-d3605e9d5863",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "a9ea3d64-f241-4926-9cb4-c5344a21c61a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "VWQWiAflK0mfShii",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        224
+      ],
+      "id": "946562ae-06bd-43a6-9b36-a072447f20c9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"prospects\": [\n   {\n     \"firstname\": \"the prospect's first name here\",\n     \"lastname\": \"their last name\",\n     \"company\": \"where they work\",\n     \"role\": \"what they do\",\n     \"email\": \"predicted email address for this prospect\",\n     \"rationale\": \"why this prospect is qualified as a potential client\"\n   }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        224
+      ],
+      "id": "2d544c41-2e28-49e1-97e5-ab87660b412b",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.firecrawl.dev/fc-3d007884f04f42ab83656e408e3f5ea4/v2/mcp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        224
+      ],
+      "id": "d4022c8b-13cb-4529-a1f3-aba748a72d1c",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        0
+      ],
+      "id": "3b366f3a-b7de-4498-b5ef-e6280f2a04f3",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d06202b0-4e73-4438-a8a5-857aaa250e21",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9187a10312f3555f81d4fa43d24ad06a1fe89a5fb40f44606a349e3d9bb6ece8"
+  },
+  "id": "hkvYRWfIwIXY7Crp",
+  "tags": []
+}
