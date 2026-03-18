@@ -140,14 +140,10 @@ Real issues encountered and solved during development:
 ## Workflow Screenshots
 
 ### Data Ingestion
-![Data Ingestion](https://ibb.co/ccjhdMD9)
+![Data Ingestion](data-ingestion.png)
 
 ### Email Agent
-![Email Agent](email-agent.png)
+![Email Agent](gmail-agent.png)
 
 ### WhatsApp Agent
 ![WhatsApp Agent](whatsapp-agent.png)
-
-## Demo
-
-[![Watch the Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/hqdefault.jpg)](https://youtu.be/YOUR_VIDEO_ID)
